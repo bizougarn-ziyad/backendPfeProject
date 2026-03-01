@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/users/**", "/api/favorites/**", "/api/watchlist/**",
                                 "/api/watched/**", "/api/lists/**", "/api/reviews/**", "/api/collections/**",
-                                "/api/ratings/**")
+                                "/api/ratings/**", "/api/chat/**", "/ws/**")
                         .permitAll()
                         .anyRequest().authenticated());
 

@@ -11,44 +11,24 @@
 -- ============================================================================
 -- 1. INSERT USERS
 -- ============================================================================
+-- Password for all test users: "password123"
+-- Hashed with BCrypt: $2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe
+-- NOTE: Using auto-increment IDs to match User entity (Long with IDENTITY strategy)
 
-INSERT INTO users (id, username, email, password_hash, bio, role, email_verified) VALUES
-(
-    '11111111-1111-1111-1111-111111111111',
-    'johndoe',
-    'john@example.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', -- password: "password123"
-    'Movie enthusiast and critic. Love sci-fi and thrillers!',
-    'USER',
-    TRUE
-),
-(
-    '22222222-2222-2222-2222-222222222222',
-    'janesmith',
-    'jane@example.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe',
-    'TV show addict. Currently binge-watching everything!',
-    'USER',
-    TRUE
-),
-(
-    '33333333-3333-3333-3333-333333333333',
-    'admin',
-    'admin@example.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe',
-    'Platform administrator',
-    'ADMIN',
-    TRUE
-),
-(
-    '44444444-4444-4444-4444-444444444444',
-    'moviebuff',
-    'buff@example.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe',
-    'Watching movies since 1990. Classic cinema lover.',
-    'USER',
-    TRUE
-);
+INSERT INTO users (username, email, password, bio, role, is_active, created_at, updated_at) VALUES
+('johndoe', 'john@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Movie enthusiast and critic. Love sci-fi and thrillers!', 'USER', TRUE, NOW(), NOW()),
+('janesmith', 'jane@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'TV show addict. Currently binge-watching everything!', 'USER', TRUE, NOW(), NOW()),
+('admin', 'admin@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Platform administrator', 'ADMIN', TRUE, NOW(), NOW()),
+('moviebuff', 'buff@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Watching movies since 1990. Classic cinema lover.', 'USER', TRUE, NOW(), NOW()),
+('cinephile', 'cine@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Art house and indie film aficionado. Cannes Film Festival regular.', 'USER', TRUE, NOW(), NOW()),
+('actionfan', 'action@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Explosions, car chases, and martial arts. Living for the adrenaline!', 'USER', TRUE, NOW(), NOW()),
+('ziyadbz666', 'ziyad@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Full-stack developer and movie enthusiast!', 'USER', TRUE, NOW(), NOW()),
+('horrorlover', 'horror@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Fear is my favorite emotion. Horror movies since childhood.', 'USER', TRUE, NOW(), NOW()),
+('comicfan', 'comics@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Marvel and DC enthusiast. Superhero movies are my jam!', 'USER', TRUE, NOW(), NOW()),
+('animelover', 'anime@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Anime and Japanese cinema. Studio Ghibli forever!', 'USER', TRUE, NOW(), NOW()),
+('documentary', 'docs@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Real stories, real impact. Documentary filmmaker and viewer.', 'USER', TRUE, NOW(), NOW()),
+('romcom', 'romcom@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Romantic comedies are my guilty pleasure. Love stories all day!', 'USER', TRUE, NOW(), NOW()),
+('scifiguru', 'scifi@example.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKK3DKnJYe', 'Science fiction fanatic. From Star Wars to Blade Runner.', 'USER', TRUE, NOW(), NOW());
 
 -- Note: Default lists (WATCH_LATER, FAVORITES, LIKED) are auto-created by trigger
 
@@ -346,12 +326,13 @@ INSERT INTO conversation_participants (conversation_id, user_id, last_read_at) V
 ('conv1111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', NOW() - INTERVAL '5 minutes');
 
 -- Messages
-INSERT INTO messages (id, conversation_id, sender_id, content, sent_at) VALUES
+INSERT INTO messages (id, conversation_id, sender_id, content, message_type, sent_at) VALUES
 (
     'msg11111-1111-1111-1111-111111111111',
     'conv1111-1111-1111-1111-111111111111',
     '11111111-1111-1111-1111-111111111111',
     'Hey Jane! Have you seen Breaking Bad? I just started watching it.',
+    'TEXT',
     NOW() - INTERVAL '30 minutes'
 ),
 (
@@ -359,6 +340,7 @@ INSERT INTO messages (id, conversation_id, sender_id, content, sent_at) VALUES
     'conv1111-1111-1111-1111-111111111111',
     '22222222-2222-2222-2222-222222222222',
     'Yes! It''s amazing! You''re in for a treat. Which episode are you on?',
+    'TEXT',
     NOW() - INTERVAL '25 minutes'
 ),
 (
@@ -366,6 +348,7 @@ INSERT INTO messages (id, conversation_id, sender_id, content, sent_at) VALUES
     'conv1111-1111-1111-1111-111111111111',
     '11111111-1111-1111-1111-111111111111',
     'Just finished season 1. Already hooked!',
+    'TEXT',
     NOW() - INTERVAL '20 minutes'
 ),
 (
@@ -373,6 +356,7 @@ INSERT INTO messages (id, conversation_id, sender_id, content, sent_at) VALUES
     'conv1111-1111-1111-1111-111111111111',
     '22222222-2222-2222-2222-222222222222',
     'Wait till you get to season 4! 🔥',
+    'TEXT',
     NOW() - INTERVAL '5 minutes'
 );
 

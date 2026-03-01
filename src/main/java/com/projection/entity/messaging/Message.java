@@ -37,8 +37,22 @@ public class Message {
     @JoinColumn(name = "sender_id", nullable = false, foreignKey = @ForeignKey(name = "fk_messages_sender"))
     private User sender;
 
-    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false, length = 20)
+    @Builder.Default
+    private MessageType messageType = MessageType.TEXT;
+
+    @Column(name = "media_url", length = 500)
+    private String mediaUrl;
+
+    @Column(name = "media_file_name", length = 255)
+    private String mediaFileName;
+
+    @Column(name = "media_mime_type", length = 100)
+    private String mediaMimeType;
 
     @Column(name = "is_read", nullable = false)
     @Builder.Default

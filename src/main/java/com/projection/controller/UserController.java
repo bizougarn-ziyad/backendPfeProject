@@ -3,6 +3,7 @@ package com.projection.controller;
 import com.projection.dto.auth.AuthResponseDto;
 import com.projection.dto.user.ChangePasswordRequestDto;
 import com.projection.dto.user.UpdateProfileRequestDto;
+import com.projection.dto.user.UserSearchResultDto;
 import com.projection.dto.user.UserStatsDto;
 import com.projection.service.UserService;
 import jakarta.validation.Valid;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,6 +22,13 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchResultDto>> searchUsers(@RequestParam String query) {
+        log.info("Received search request for users with query: {}", query);
+        List<UserSearchResultDto> users = userService.searchUsers(query);
+        return ResponseEntity.ok(users);
+    }
 
     @GetMapping("/{userId}/stats")
     public ResponseEntity<UserStatsDto> getUserStats(@PathVariable Long userId) {

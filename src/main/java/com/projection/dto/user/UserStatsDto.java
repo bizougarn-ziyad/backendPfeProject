@@ -7,6 +7,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserStatsDto {
+    private Long userId;
+    private String username;
+    private String bio;
+    private String profilePictureUrl;
     private long moviesWatched;
     private long seriesWatched;
     private long following;

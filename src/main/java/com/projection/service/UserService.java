@@ -3,6 +3,7 @@ package com.projection.service;
 import com.projection.dto.auth.AuthResponseDto;
 import com.projection.dto.user.ChangePasswordRequestDto;
 import com.projection.dto.user.UpdateProfileRequestDto;
+import com.projection.dto.user.UserSearchResultDto;
 import com.projection.dto.user.UserStatsDto;
 import com.projection.entity.enums.ContentType;
 import com.projection.entity.user.User;
@@ -19,6 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +33,7 @@ public class UserService {
     private final UserFollowRepository userFollowRepository;
     private final ReviewRepository reviewRepository;
     private final UserListRepository userListRepository;
+    private final com.projection.repository.UserWatchedRepository userWatchedRepository;
 
     @Transactional(readOnly = true)
     public User getUserById(Long userId) {
@@ -95,17 +100,21 @@ public class UserService {
     public UserStatsDto getUserStats(Long userId) {
         log.info("Fetching stats for user ID: {}", userId);
 
-        // Verify user exists
-        getUserById(userId);
+        // Verify user exists and get user info
+        User user = getUserById(userId);
 
-        long moviesWatched = reviewRepository.countByUserIdAndContentType(userId, ContentType.MOVIE);
-        long seriesWatched = reviewRepository.countByUserIdAndContentType(userId, ContentType.TV);
+        long moviesWatched = userWatchedRepository.countByUserIdAndContentType(userId, ContentType.MOVIE);
+        long seriesWatched = userWatchedRepository.countByUserIdAndContentType(userId, ContentType.TV);
         long following = userFollowRepository.countByFollowerId(userId);
         long followers = userFollowRepository.countByFollowingId(userId);
         long reviewsCount = reviewRepository.countByUserId(userId);
         long listsCount = userListRepository.countByUserId(userId);
 
         return UserStatsDto.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .bio(user.getBio())
+                .profilePictureUrl(user.getProfilePictureUrl())
                 .moviesWatched(moviesWatched)
                 .seriesWatched(seriesWatched)
                 .following(following)
@@ -113,6 +122,27 @@ public class UserService {
                 .reviewsCount(reviewsCount)
                 .listsCount(listsCount)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSearchResultDto> searchUsers(String query) {
+        log.info("Searching for users with query: {}", query);
+
+        if (query == null || query.trim().isEmpty()) {
+            return List.of();
+        }
+
+        List<User> users = userRepository.searchUsers(query.trim());
+
+        return users.stream()
+                .limit(5) // Limit to 5 results
+                .map(user -> UserSearchResultDto.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .bio(user.getBio())
+                        .profilePictureUrl(user.getProfilePictureUrl())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private AuthResponseDto convertToAuthResponse(User user, String message) {
