@@ -38,11 +38,17 @@ public class UserFollow {
     @JsonIgnore
     private User following;
 
+    @Column(name = "status", length = 20)
+    @Builder.Default
+    private String status = "PENDING";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (status == null)
+            status = "PENDING";
     }
 }

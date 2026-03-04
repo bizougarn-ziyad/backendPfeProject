@@ -3,12 +3,14 @@ package com.projection.service;
 import com.projection.dto.chat.ConversationResponseDto;
 import com.projection.dto.chat.MessageResponseDto;
 import com.projection.dto.chat.SendMessageRequestDto;
+import com.projection.entity.enums.ConversationStatus;
 import com.projection.entity.messaging.Conversation;
 import com.projection.entity.messaging.Message;
 import com.projection.entity.user.User;
 import com.projection.exception.ResourceNotFoundException;
 import com.projection.repository.ConversationRepository;
 import com.projection.repository.MessageRepository;
+import com.projection.repository.UserFollowRepository;
 import com.projection.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class ChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final UserFollowRepository userFollowRepository;
 
     @Transactional
     public MessageResponseDto sendMessage(SendMessageRequestDto request, Long senderId) {
@@ -36,6 +39,25 @@ public class ChatService {
             // Existing conversation
             conversation = conversationRepository.findById(request.getConversationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+
+            // Check if conversation is PENDING and validate message count
+            if (conversation.getStatus() == ConversationStatus.PENDING) {
+                // If sender is the creator and conversation is pending
+                if (conversation.getCreatedBy() != null &&
+                        conversation.getCreatedBy().getId().equals(senderId)) {
+                    // Check if creator already sent a message
+                    Long messageCount = messageRepository.countBySenderIdAndConversationId(
+                            conversation.getId(), senderId);
+                    if (messageCount > 0) {
+                        throw new IllegalStateException(
+                                "You can only send one message until the other person accepts your request");
+                    }
+                } else {
+                    // Recipient is responding, accept the conversation
+                    conversation.setStatus(ConversationStatus.ACCEPTED);
+                    conversationRepository.save(conversation);
+                }
+            }
         } else if (request.getRecipientId() != null) {
             // Create or find conversation with recipient
             User recipient = userRepository.findById(request.getRecipientId())
@@ -43,8 +65,17 @@ public class ChatService {
 
             conversation = conversationRepository.findByTwoUsers(senderId, request.getRecipientId())
                     .orElseGet(() -> {
+                        // Check if users follow each other
+                        boolean areMutualFollowers = userFollowRepository.areMutualFollowers(
+                                senderId, request.getRecipientId());
+
+                        ConversationStatus status = areMutualFollowers ? ConversationStatus.ACCEPTED
+                                : ConversationStatus.PENDING;
+
                         Conversation newConv = Conversation.builder()
                                 .isGroup(false)
+                                .status(status)
+                                .createdBy(sender)
                                 .participants(new HashSet<>(Arrays.asList(sender, recipient)))
                                 .messages(new ArrayList<>())
                                 .build();
@@ -141,6 +172,19 @@ public class ChatService {
         return messageRepository.countUnreadMessagesByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
+    public Long getRecipientId(UUID conversationId, Long senderId) {
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+
+        // Get the other participant who is not the sender
+        return conversation.getParticipants().stream()
+                .filter(p -> !p.getId().equals(senderId))
+                .findFirst()
+                .map(User::getId)
+                .orElse(null);
+    }
+
     private MessageResponseDto mapToMessageResponseDto(Message message) {
         return MessageResponseDto.builder()
                 .id(message.getId())
@@ -177,6 +221,9 @@ public class ChatService {
         Long unreadCount = messageRepository.countUnreadMessagesByConversationIdAndUserId(
                 conversation.getId(), currentUserId);
 
+        // Count total messages
+        Integer messageCount = messageRepository.countByConversationId(conversation.getId());
+
         return ConversationResponseDto.builder()
                 .id(conversation.getId())
                 .otherUserId(otherUser != null ? otherUser.getId() : null)
@@ -185,6 +232,9 @@ public class ChatService {
                 .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
                 .lastMessageTime(lastMessage != null ? lastMessage.getSentAt() : conversation.getCreatedAt())
                 .unreadCount(unreadCount)
+                .status(conversation.getStatus() != null ? conversation.getStatus().name() : "ACCEPTED")
+                .createdById(conversation.getCreatedBy() != null ? conversation.getCreatedBy().getId() : null)
+                .messageCount(messageCount)
                 .build();
     }
 }

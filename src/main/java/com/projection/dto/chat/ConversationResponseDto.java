@@ -20,4 +20,7 @@ public class ConversationResponseDto {
     private String lastMessage;
     private LocalDateTime lastMessageTime;
     private Long unreadCount;
+    private String status;
+    private Long createdById;
+    private Integer messageCount;
 }

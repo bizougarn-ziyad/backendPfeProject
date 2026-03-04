@@ -1,6 +1,7 @@
 package com.projection.entity.messaging;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.projection.entity.enums.ConversationStatus;
 import com.projection.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,6 +37,15 @@ public class Conversation {
     @Column(name = "is_group", nullable = false)
     @Builder.Default
     private Boolean isGroup = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    @Builder.Default
+    private ConversationStatus status = ConversationStatus.ACCEPTED;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", foreignKey = @ForeignKey(name = "fk_conversation_created_by"))
+    private User createdBy;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "conversation_participants", joinColumns = @JoinColumn(name = "conversation_id", foreignKey = @ForeignKey(name = "fk_conversation_participants_conversation")), inverseJoinColumns = @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_conversation_participants_user")), indexes = {

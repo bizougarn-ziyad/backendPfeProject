@@ -12,15 +12,23 @@ import java.util.UUID;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId AND m.isDeleted = false ORDER BY m.sentAt ASC")
-    List<Message> findByConversationIdOrderBySentAtAsc(@Param("conversationId") UUID conversationId);
+        @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId AND m.isDeleted = false ORDER BY m.sentAt ASC")
+        List<Message> findByConversationIdOrderBySentAtAsc(@Param("conversationId") UUID conversationId);
 
-    @Query("SELECT COUNT(m) FROM Message m JOIN m.conversation c JOIN c.participants p " +
-            "WHERE p.id = :userId AND m.sender.id != :userId AND m.isRead = false AND m.isDeleted = false")
-    Long countUnreadMessagesByUserId(@Param("userId") Long userId);
+        @Query("SELECT COUNT(m) FROM Message m JOIN m.conversation c JOIN c.participants p " +
+                        "WHERE p.id = :userId AND m.sender.id != :userId AND m.isRead = false AND m.isDeleted = false")
+        Long countUnreadMessagesByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation.id = :conversationId " +
-            "AND m.sender.id != :userId AND m.isRead = false AND m.isDeleted = false")
-    Long countUnreadMessagesByConversationIdAndUserId(@Param("conversationId") UUID conversationId,
-            @Param("userId") Long userId);
+        @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation.id = :conversationId " +
+                        "AND m.sender.id != :userId AND m.isRead = false AND m.isDeleted = false")
+        Long countUnreadMessagesByConversationIdAndUserId(@Param("conversationId") UUID conversationId,
+                        @Param("userId") Long userId);
+
+        @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation.id = :conversationId " +
+                        "AND m.sender.id = :senderId AND m.isDeleted = false")
+        Long countBySenderIdAndConversationId(@Param("conversationId") UUID conversationId,
+                        @Param("senderId") Long senderId);
+
+        @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation.id = :conversationId AND m.isDeleted = false")
+        Integer countByConversationId(@Param("conversationId") UUID conversationId);
 }

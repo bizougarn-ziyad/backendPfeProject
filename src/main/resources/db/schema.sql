@@ -570,7 +570,56 @@ DESIGN DECISIONS & RATIONALE:
 */
 
 -- ============================================================================
--- END OF SCHEMA
+-- COMMUNITY FORUM TABLES
 -- ============================================================================
 
--- To initialize with sample data, see separate seed.sql file
+-- Community discussion topics
+CREATE TABLE IF NOT EXISTS community_topics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(500) NOT NULL,
+    content TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL CHECK (category IN ('ANNOUNCEMENTS', 'MOVIES', 'TV_SHOWS', 'RECOMMENDATIONS', 'SUGGESTIONS', 'SUPPORT')),
+    author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    is_pinned BOOLEAN DEFAULT FALSE,
+    is_locked BOOLEAN DEFAULT FALSE,
+    upvote_count INTEGER DEFAULT 0,
+    reply_count INTEGER DEFAULT 0,
+    view_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    last_activity_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Community topic replies
+CREATE TABLE IF NOT EXISTS community_replies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    topic_id UUID NOT NULL REFERENCES community_topics(id) ON DELETE CASCADE,
+    author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Community upvotes
+CREATE TABLE IF NOT EXISTS community_upvotes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    topic_id UUID NOT NULL REFERENCES community_topics(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(topic_id, user_id)
+);
+
+-- Indexes for community tables
+CREATE INDEX IF NOT EXISTS idx_community_topics_category ON community_topics(category);
+CREATE INDEX IF NOT EXISTS idx_community_topics_author_id ON community_topics(author_id);
+CREATE INDEX IF NOT EXISTS idx_community_topics_created_at ON community_topics(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_topics_is_pinned ON community_topics(is_pinned);
+CREATE INDEX IF NOT EXISTS idx_community_topics_last_activity ON community_topics(last_activity_at DESC);
+CREATE INDEX IF NOT EXISTS idx_community_replies_topic_id ON community_replies(topic_id);
+CREATE INDEX IF NOT EXISTS idx_community_replies_author_id ON community_replies(author_id);
+CREATE INDEX IF NOT EXISTS idx_community_replies_created_at ON community_replies(created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_community_upvotes_topic_id ON community_upvotes(topic_id);
+CREATE INDEX IF NOT EXISTS idx_community_upvotes_user_id ON community_upvotes(user_id);
+
+-- ============================================================================
