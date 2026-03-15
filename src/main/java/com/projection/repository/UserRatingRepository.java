@@ -31,4 +31,12 @@ public interface UserRatingRepository extends JpaRepository<UserRating, Long> {
     Long countRatingsForContent(@Param("tmdbId") Long tmdbId, @Param("contentType") String contentType);
 
     void deleteByUserAndContent(User user, ContentReference content);
+
+    /** Returns [tmdbId, contentType, avgRating, ratingCount] for the top N most-rated content. */
+    @Query("SELECT ur.content.tmdbId, CAST(ur.content.contentType AS string), AVG(ur.rating), COUNT(ur) " +
+           "FROM UserRating ur " +
+           "GROUP BY ur.content.tmdbId, ur.content.contentType " +
+           "HAVING COUNT(ur) >= 2 " +
+           "ORDER BY AVG(ur.rating) DESC")
+    List<Object[]> findTopRated(org.springframework.data.domain.Pageable pageable);
 }

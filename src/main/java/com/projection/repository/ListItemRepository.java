@@ -23,4 +23,11 @@ public interface ListItemRepository extends JpaRepository<ListItem, UUID> {
     @Query("SELECT CASE WHEN COUNT(li) > 0 THEN true ELSE false END FROM ListItem li WHERE li.userList.id = :listId AND li.contentReference.tmdbId = :tmdbId AND li.contentReference.contentType = :contentType")
     boolean existsByListIdAndContent(@Param("listId") UUID listId, @Param("tmdbId") Long tmdbId,
             @Param("contentType") com.projection.entity.enums.ContentType contentType);
+
+    /** Returns [tmdbId, contentType, saveCount] for the most-saved content. */
+    @Query("SELECT li.contentReference.tmdbId, CAST(li.contentReference.contentType AS string), COUNT(li) " +
+           "FROM ListItem li " +
+           "GROUP BY li.contentReference.tmdbId, li.contentReference.contentType " +
+           "ORDER BY COUNT(li) DESC")
+    List<Object[]> findMostCollected(org.springframework.data.domain.Pageable pageable);
 }

@@ -1,0 +1,50 @@
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "list_likes"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "notifications"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "review_likes"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "reviews"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "user_follows"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "conversation_participants"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "conversations"
+psql:src/main/resources/db/full_reseed.sql:20: NOTICE:  truncate cascades to table "messages"
+TRUNCATE TABLE
+psql:src/main/resources/db/full_reseed.sql:23: NOTICE:  column "country" of relation "users" already exists, skipping
+ALTER TABLE
+INSERT 0 91
+UPDATE 4
+UPDATE 3
+UPDATE 4
+UPDATE 3
+UPDATE 3
+UPDATE 9
+UPDATE 2
+UPDATE 3
+UPDATE 3
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 2
+UPDATE 1
+UPDATE 2
+UPDATE 2
+INSERT 0 35
+DO
+DO
+DO
+DO
+DO
+DO
+DO
+      ?column?      | count 
+--------------------+-------
+ users              |    91
+ content_references |    35
+ user_watched       |  2555
+ user_ratings       |   900
+ community_topics   |    20
+ community_replies  |   100
+(6 rows)
+

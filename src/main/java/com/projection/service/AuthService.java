@@ -47,6 +47,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
                 .role(Role.USER)
                 .isActive(true)
+                .isSuspended(false)
                 .build();
 
         user = userRepository.save(user);

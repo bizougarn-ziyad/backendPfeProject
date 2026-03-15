@@ -31,8 +31,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/users/**", "/api/favorites/**", "/api/watchlist/**",
                                 "/api/watched/**", "/api/lists/**", "/api/reviews/**", "/api/collections/**",
-                                "/api/ratings/**", "/api/chat/**", "/api/community/**", "/ws/**")
+                                "/api/ratings/**", "/api/chat/**", "/api/community/**", "/ws/**",
+                                "/api/files/**")
                         .permitAll()
+                        .requestMatchers("/api/admin/**").permitAll() // role checked in service via adminId param
                         .anyRequest().authenticated());
 
         return http.build();

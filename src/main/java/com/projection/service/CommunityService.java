@@ -40,6 +40,9 @@ public class CommunityService {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        // Check if user is banned or suspended
+        checkUserModerationStatus(author);
+
         CommunityTopic topic = CommunityTopic.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -92,6 +95,9 @@ public class CommunityService {
 
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Check if user is banned or suspended
+        checkUserModerationStatus(author);
 
         CommunityReply.CommunityReplyBuilder replyBuilder = CommunityReply.builder()
                 .topic(topic)
@@ -282,5 +288,28 @@ public class CommunityService {
             case SUGGESTIONS -> "Feature Requests";
             case SUPPORT -> "Help & Support";
         };
+    }
+
+    /**
+     * Throws an exception if the user is permanently banned or currently suspended.
+     * Auto-lifts expired suspensions.
+     */
+    private void checkUserModerationStatus(User user) {
+        if (!user.getIsActive()) {
+            throw new IllegalStateException("Your account has been banned. Reason: " +
+                    (user.getBanReason() != null ? user.getBanReason() : "Community violation"));
+        }
+        if (Boolean.TRUE.equals(user.getIsSuspended())) {
+            if (user.getSuspendedUntil() != null && java.time.LocalDateTime.now().isAfter(user.getSuspendedUntil())) {
+                // Suspension expired — auto-lift
+                user.setIsSuspended(false);
+                user.setSuspendedUntil(null);
+                userRepository.save(user);
+            } else {
+                throw new IllegalStateException("You are currently suspended until " +
+                        user.getSuspendedUntil() + ". Reason: " +
+                        (user.getBanReason() != null ? user.getBanReason() : "Community violation"));
+            }
+        }
     }
 }
