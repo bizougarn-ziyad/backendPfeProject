@@ -1,6 +1,7 @@
 package com.projection.controller;
 
 import com.projection.dto.auth.AuthResponseDto;
+import com.projection.dto.auth.GoogleAuthRequestDto;
 import com.projection.dto.auth.LoginRequestDto;
 import com.projection.dto.auth.SignUpRequestDto;
 import com.projection.service.AuthService;
@@ -31,6 +32,13 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequest) {
         log.info("Received login request for email: {}", loginRequest.getEmail());
         AuthResponseDto response = authService.login(loginRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponseDto> googleAuth(@Valid @RequestBody GoogleAuthRequestDto googleAuthRequest) {
+        log.info("Received Google auth request");
+        AuthResponseDto response = authService.googleAuth(googleAuthRequest);
         return ResponseEntity.ok(response);
     }
 
