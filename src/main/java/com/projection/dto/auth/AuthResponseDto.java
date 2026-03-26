@@ -16,6 +16,7 @@ public class AuthResponseDto {
     private String username;
     private String email;
     private String bio;
+    private String country;
     private String profilePictureUrl;
     private Role role;
     private String message;

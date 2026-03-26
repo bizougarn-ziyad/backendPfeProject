@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -38,7 +39,7 @@ public class AuthService {
     private String googleClientId;
 
     @Transactional
-    public AuthResponseDto signUp(SignUpRequestDto signUpRequest) {
+    public AuthResponseDto signUp(SignUpRequestDto signUpRequest, String clientIp) {
         log.info("Attempting to create new user with email: {}", signUpRequest.getEmail());
 
         // Check if email already exists
@@ -58,6 +59,7 @@ public class AuthService {
                 .username(signUpRequest.getUsername())
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .country(resolveCountry(signUpRequest.getCountry(), clientIp))
                 .role(Role.USER)
                 .isActive(true)
                 .isSuspended(false)
@@ -70,7 +72,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponseDto login(LoginRequestDto loginRequest) {
+    public AuthResponseDto login(LoginRequestDto loginRequest, String clientIp) {
         log.info("Login attempt for email: {}", loginRequest.getEmail());
 
         // Find user by email
@@ -94,6 +96,9 @@ public class AuthService {
 
         // Update last login
         user.setLastLogin(LocalDateTime.now());
+        if (user.getCountry() == null || user.getCountry().isBlank()) {
+            user.setCountry(resolveCountry(null, clientIp));
+        }
         userRepository.save(user);
 
         log.info("User logged in successfully: {}", user.getEmail());
@@ -101,7 +106,7 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthResponseDto googleAuth(GoogleAuthRequestDto googleAuthRequest) {
+    public AuthResponseDto googleAuth(GoogleAuthRequestDto googleAuthRequest, String clientIp) {
         String idToken = googleAuthRequest.getIdToken();
         Map<String, Object> tokenInfo;
         try {
@@ -139,6 +144,7 @@ public class AuthService {
                     .username(username)
                     .email(email)
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .country(resolveCountry(googleAuthRequest.getCountry(), clientIp))
                     .role(Role.USER)
                     .isActive(true)
                     .isSuspended(false)
@@ -147,6 +153,11 @@ public class AuthService {
                     .build();
         } else if (!user.getIsActive()) {
             throw new InvalidCredentialsException("Account is deactivated");
+        }
+
+        String resolvedCountry = resolveCountry(googleAuthRequest.getCountry(), clientIp);
+        if (resolvedCountry != null && !Objects.equals(user.getCountry(), resolvedCountry)) {
+            user.setCountry(resolvedCountry);
         }
 
         if ((user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isBlank())
@@ -246,12 +257,82 @@ public class AuthService {
         return value == null ? null : String.valueOf(value);
     }
 
+    private String resolveCountry(String preferredCountry, String clientIp) {
+        String normalizedPreferredCountry = normalizeCountry(preferredCountry);
+        if (normalizedPreferredCountry != null) {
+            return normalizedPreferredCountry;
+        }
+        return resolveCountryFromIp(clientIp);
+    }
+
+    private String normalizeCountry(String country) {
+        if (country == null) {
+            return null;
+        }
+        String normalized = country.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String resolveCountryFromIp(String clientIp) {
+        String ip = normalizeIp(clientIp);
+        if (ip == null) {
+            return null;
+        }
+
+        String url = UriComponentsBuilder
+                .fromUriString("https://ipapi.co/{ip}/json/")
+                .buildAndExpand(ip)
+                .toUriString();
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = restTemplate.getForObject(url, Map.class);
+            String country = body == null ? null : stringValue(body.get("country_name"));
+            return normalizeCountry(country);
+        } catch (Exception e) {
+            log.debug("Could not resolve country for IP {}", ip);
+            return null;
+        }
+    }
+
+    private String normalizeIp(String clientIp) {
+        if (clientIp == null || clientIp.isBlank()) {
+            return null;
+        }
+
+        String ip = clientIp.trim();
+        if (ip.equals("::1") || ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1") || ip.equals("localhost")) {
+            return null;
+        }
+
+        if (ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("169.254.")) {
+            return null;
+        }
+
+        if (ip.startsWith("172.")) {
+            String[] parts = ip.split("\\.");
+            if (parts.length > 1) {
+                try {
+                    int secondOctet = Integer.parseInt(parts[1]);
+                    if (secondOctet >= 16 && secondOctet <= 31) {
+                        return null;
+                    }
+                } catch (NumberFormatException ignored) {
+                    return null;
+                }
+            }
+        }
+
+        return ip;
+    }
+
     private AuthResponseDto convertToAuthResponse(User user, String message) {
         return AuthResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .bio(user.getBio())
+                .country(user.getCountry())
                 .profilePictureUrl(user.getProfilePictureUrl())
                 .role(user.getRole())
                 .message(message)

@@ -2,6 +2,7 @@ package com.projection.exception;
 
 import com.projection.dto.auth.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
         @ExceptionHandler(UserAlreadyExistsException.class)
@@ -105,11 +107,13 @@ public class GlobalExceptionHandler {
                         Exception ex,
                         HttpServletRequest request) {
 
+                log.error("Unhandled exception on {} {}", request.getMethod(), request.getRequestURI(), ex);
+
                 ErrorResponseDto error = new ErrorResponseDto(
                                 LocalDateTime.now(),
                                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                                 "Internal Server Error",
-                                "An unexpected error occurred: " + ex.getMessage(),
+                                "Something went wrong on our side. Please try again.",
                                 request.getRequestURI());
 
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

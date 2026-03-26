@@ -42,12 +42,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByOrderByCreatedAtDesc();
 
-    /** Returns [country, count] ordered by count desc. Nulls/blanks are excluded. */
-    @Query("SELECT u.country, COUNT(u) FROM User u WHERE u.country IS NOT NULL AND u.country <> '' GROUP BY u.country ORDER BY COUNT(u) DESC")
+    /**
+     * Returns [country, count] ordered by count desc. Null/blank countries are
+     * grouped as Unknown.
+     */
+    @Query("SELECT COALESCE(NULLIF(TRIM(u.country), ''), 'Unknown'), COUNT(u) FROM User u GROUP BY COALESCE(NULLIF(TRIM(u.country), ''), 'Unknown') ORDER BY COUNT(u) DESC")
     List<Object[]> countByCountry();
 
-    /** Returns users created on or after the given date, for timeline grouping in Java. */
+    /**
+     * Returns users created on or after the given date, for timeline grouping in
+     * Java.
+     */
     @Query("SELECT u FROM User u WHERE u.createdAt >= :since ORDER BY u.createdAt ASC")
     List<User> findCreatedSince(@Param("since") LocalDateTime since);
 }
-

@@ -72,6 +72,7 @@ public class UserService {
 
         // Update other fields
         user.setBio(updateRequest.getBio());
+        user.setCountry(normalizeCountry(updateRequest.getCountry()));
         if (updateRequest.getProfilePictureUrl() != null) {
             user.setProfilePictureUrl(updateRequest.getProfilePictureUrl());
         }
@@ -321,9 +322,18 @@ public class UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .bio(user.getBio())
+                .country(user.getCountry())
                 .profilePictureUrl(user.getProfilePictureUrl())
                 .role(user.getRole())
                 .message(message)
                 .build();
+    }
+
+    private String normalizeCountry(String country) {
+        if (country == null) {
+            return null;
+        }
+        String normalized = country.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 }

@@ -26,5 +26,8 @@ public class UpdateProfileRequestDto {
     @Size(max = 1000, message = "Bio must not exceed 1000 characters")
     private String bio;
 
+    @Size(max = 100, message = "Country must not exceed 100 characters")
+    private String country;
+
     private String profilePictureUrl;
 }

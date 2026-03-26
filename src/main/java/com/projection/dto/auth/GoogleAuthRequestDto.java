@@ -18,4 +18,7 @@ public class GoogleAuthRequestDto {
 
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String preferredUsername;
+
+    @Size(max = 100, message = "Country must not exceed 100 characters")
+    private String country;
 }
